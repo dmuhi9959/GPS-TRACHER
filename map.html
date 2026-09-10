@@ -30,6 +30,15 @@
         #battery-status { color: #4CAF50; font-weight: bold; }
         #status-text { color: #4CAF50; font-weight: bold; }
 
+        /* Tombol Aktifkan Suara */
+        #sound-btn {
+            position: absolute; top: 60px; right: 10px; z-index: 1000;
+            padding: 10px 15px; background: #ffc107; color: black; border: none;
+            border-radius: 5px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        #sound-btn:hover { background: #e0a800; }
+
         /* Animasi Berkedip untuk SOS */
         @keyframes blink {
             0% { opacity: 1; }
@@ -40,9 +49,7 @@
 
         /* Styling untuk Emoji Icon */
         .emoji-icon {
-            font-size: 40px; /* Ukuran emoji */
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Bayangan agar kelihatan di peta gelap */
-            line-height: 1;
+            font-size: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); line-height: 1;
         }
     </style>
 </head>
@@ -53,6 +60,7 @@
     </div>
 
     <button id="reset-btn" onclick="resetSOS()">Reset SOS (Aman)</button>
+    <button id="sound-btn" onclick="aktifkanSuara()">🔊 Aktifkan Suara</button>
     <div id="map"></div>
 
     <script>
@@ -74,38 +82,79 @@
         // 3. SETTING IKON PAKAI EMOJI 👷‍♂️
         const iconAman = L.divIcon({
             html: '<div class="emoji-icon">👷‍♂️</div>',
-            className: '', 
-            iconSize: [40, 40],
-            iconAnchor: [20, 35], // Posisi tengah bawah emoji
-            popupAnchor: [0, -35]
+            className: '', iconSize: [40, 40], iconAnchor: [20, 35], popupAnchor: [0, -35]
         });
-
         const iconSOS = L.divIcon({
-            html: '<div class="emoji-icon">🚨</div>', // Emoji Sirine Darurat
-            className: '', 
-            iconSize: [40, 40],
-            iconAnchor: [20, 35],
-            popupAnchor: [0, -35]
+            html: '<div class="emoji-icon">🚨</div>',
+            className: '', iconSize: [40, 40], iconAnchor: [20, 35], popupAnchor: [0, -35]
         });
 
         const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
 
         // 4. SETTING JEJAK HISTORY (GARIS POLYLINE)
         const historyPoints = [];
-        const historyLine = L.polyline(historyPoints, {
-            color: '#00ffff',
-            weight: 4,
-            opacity: 0.7
-        }).addTo(map);
+        const historyLine = L.polyline(historyPoints, { color: '#00ffff', weight: 4, opacity: 0.7 }).addTo(map);
 
-        // 5. BACA DATA REAL-TIME
+        // 5. SISTEM ALARM SUARA (WEB AUDIO API)
+        let audioCtx = null;
+        let alarmInterval = null;
+        let isSoundActive = false;
+
+        function aktifkanSuara() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            isSoundActive = true;
+            document.getElementById('sound-btn').style.display = 'none'; // Sembunyikan tombol setelah diklik
+            alert("Suara diaktifkan! Sistem akan berbunyi jika ada SOS.");
+        }
+
+        function bunyikanSirine() {
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime); // Nada tinggi
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.5); // Nada rendah
+            
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+            
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 1);
+        }
+
+        function startAlarm() {
+            if (isSoundActive && !alarmInterval) {
+                bunyikanSirine();
+                alarmInterval = setInterval(bunyikanSirine, 1000); // Ulangi tiap 1 detik
+            }
+        }
+
+        function stopAlarm() {
+            if (alarmInterval) {
+                clearInterval(alarmInterval);
+                alarmInterval = null;
+            }
+        }
+
+        // 6. BACA DATA REAL-TIME
         let currentLat = 0, currentLng = 0, currentStatus = "AMAN", currentBat = 100;
 
         database.ref('gps/aku/lat').on('value', (s) => { currentLat = s.val(); updateMap(); });
         database.ref('gps/aku/lng').on('value', (s) => { currentLng = s.val(); updateMap(); });
         
         database.ref('gps/aku/status').on('value', (s) => {
-            currentStatus = s.val() || "AMAN";
+            let newStatus = s.val() || "AMAN";
+            if (newStatus === "SOS" && currentStatus !== "SOS") {
+                startAlarm(); // Memicu suara saat status berubah jadi SOS
+            } else if (newStatus === "AMAN") {
+                stopAlarm(); // Matikan suara saat di-reset
+            }
+            currentStatus = newStatus;
             updateMap();
         });
 
@@ -119,7 +168,6 @@
         function updateMap() {
             if (currentLat && currentLng) {
                 const newPos = [currentLat, currentLng];
-                
                 marker.setLatLng(newPos);
                 map.setView(newPos, 18); 
 
@@ -145,6 +193,7 @@
         }
 
         function resetSOS() {
+            stopAlarm();
             database.ref('gps/aku/status').set("AMAN");
         }
     </script>
