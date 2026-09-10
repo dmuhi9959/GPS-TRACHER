@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GPS Tracker SOS</title>
+    <title>GPS Tracker SOS (Satelit Asli)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -43,10 +43,13 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 2. SETTING PETA
-        const map = L.map('map').setView([-6.396311, 107.430083], 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap & CartoDB'
+        // 2. SETTING PETA (GAMBAR SATELIT ASLI)
+        const map = L.map('map').setView([-6.396311, 107.430083], 17);
+        
+        // Pakai Google Satellite (Foto Asli dari Atas)
+        L.tileLayer('https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}', {
+            attribution: 'Google Satellite',
+            maxZoom: 20
         }).addTo(map);
 
         // 3. SETTING IKON
@@ -76,7 +79,7 @@
         function updateMap() {
             if (currentLat && currentLng) {
                 marker.setLatLng([currentLat, currentLng]);
-                map.setView([currentLat, currentLng], 16);
+                map.setView([currentLat, currentLng], 18); // Zoom lebih dekat (18)
 
                 if (currentStatus === "SOS") {
                     // Jika SOS
