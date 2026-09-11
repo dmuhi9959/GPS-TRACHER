@@ -70,12 +70,13 @@
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON (PAKAI GAMBAR ORANG 3D BAWAAN AGAR TIDAK ERROR)
+        // 3. SETTING IKON (GUNAKAN NAMA FILE YANG KAMU UPLOAD KE GITHUB)
+        // UBAH 'pekerja.png' DI BAWAH SESUAI NAMA FILE KAMU!
         const iconAman = L.icon({
-            iconUrl: 'https://img.icons8.com/3d-fluency/96/person-male.png', 
-            iconSize: [48, 48], 
-            iconAnchor: [24, 48], 
-            popupAnchor: [0, -48]
+            iconUrl: 'pekerja.png',  // <--- UBAH NAMA INI (Contoh: pekerja.png atau pekerja.jpg)
+            iconSize: [50, 50], 
+            iconAnchor: [25, 50], 
+            popupAnchor: [0, -50]
         });
         
         const iconSOS = L.icon({
