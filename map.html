@@ -27,7 +27,7 @@
             border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-        #team-name { color: #ffc107; font-weight: bold; } /* Warna Kuning untuk Nama Tim */
+        #team-name { color: #ffc107; font-weight: bold; }
         #status-text { color: #4CAF50; font-weight: bold; }
 
         /* Tombol Aktifkan Suara */
@@ -46,11 +46,6 @@
             100% { opacity: 1; }
         }
         .sos-alert { animation: blink 1s infinite; }
-
-        /* Styling untuk Emoji Icon */
-        .emoji-icon {
-            font-size: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); line-height: 1;
-        }
     </style>
 </head>
 <body>
@@ -79,14 +74,21 @@
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON PAKAI EMOJI 👷‍♂️
-        const iconAman = L.divIcon({
-            html: '<div class="emoji-icon">👷‍♂️</div>',
-            className: '', iconSize: [40, 40], iconAnchor: [20, 35], popupAnchor: [0, -35]
+        // 3. SETTING IKON PAKAI FOTO SENDIRI
+        const iconAman = L.icon({
+            iconUrl: 'foto-saya.jpg', // <--- NAMA FOTO KAMU DI SINI
+            iconSize: [50, 50],       // Ukuran foto (50x50 pixel)
+            iconAnchor: [25, 50],     // Titik bawah tengah foto menyentuh peta
+            popupAnchor: [0, -50],
+            className: 'rounded-photo' // Tambahkan class untuk buat foto jadi bulat (Opsional)
         });
-        const iconSOS = L.divIcon({
-            html: '<div class="emoji-icon">🚨</div>',
-            className: '', iconSize: [40, 40], iconAnchor: [20, 35], popupAnchor: [0, -35]
+        
+        // Untuk SOS, biarkan pakai sirine 3D
+        const iconSOS = L.icon({
+            iconUrl: 'https://img.icons8.com/3d-fluency/96/siren.png', 
+            iconSize: [48, 48], 
+            iconAnchor: [24, 48], 
+            popupAnchor: [0, -48]
         });
 
         const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
@@ -105,7 +107,7 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
             isSoundActive = true;
-            document.getElementById('sound-btn').style.display = 'none'; // Sembunyikan tombol setelah diklik
+            document.getElementById('sound-btn').style.display = 'none';
             alert("Suara diaktifkan! Sistem akan berbunyi jika ada SOS.");
         }
 
@@ -117,8 +119,8 @@
             gain.connect(audioCtx.destination);
             
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime); // Nada tinggi
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.5); // Nada rendah
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.5);
             
             gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
@@ -130,7 +132,7 @@
         function startAlarm() {
             if (isSoundActive && !alarmInterval) {
                 bunyikanSirine();
-                alarmInterval = setInterval(bunyikanSirine, 1000); // Ulangi tiap 1 detik
+                alarmInterval = setInterval(bunyikanSirine, 1000);
             }
         }
 
@@ -150,9 +152,9 @@
         database.ref('gps/aku/status').on('value', (s) => {
             let newStatus = s.val() || "AMAN";
             if (newStatus === "SOS" && currentStatus !== "SOS") {
-                startAlarm(); // Memicu suara saat status berubah jadi SOS
+                startAlarm();
             } else if (newStatus === "AMAN") {
-                stopAlarm(); // Matikan suara saat di-reset
+                stopAlarm();
             }
             currentStatus = newStatus;
             updateMap();
@@ -164,7 +166,6 @@
                 marker.setLatLng(newPos);
                 map.setView(newPos, 18); 
 
-                // Minimal 10 meter baru garisnya di-ekstend (Hindari Zig-Zag)
                 if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 10) {
                     historyPoints.push(newPos);
                     historyLine.setLatLngs(historyPoints);
