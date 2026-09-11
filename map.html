@@ -11,7 +11,6 @@
         html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: #1a1a1a; }
         #map { height: 100vh; width: 100%; }
         
-        /* Tombol Reset SOS */
         #reset-btn {
             position: absolute; top: 10px; right: 10px; z-index: 1000;
             padding: 10px 15px; background: #28a745; color: white; border: none;
@@ -20,7 +19,6 @@
         }
         #reset-btn:hover { background: #218838; }
 
-        /* Info Box (Tim & Status) */
         #info-box {
             position: absolute; top: 10px; left: 10px; z-index: 1000;
             background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 15px;
@@ -30,7 +28,6 @@
         #team-name { color: #ffc107; font-weight: bold; }
         #status-text { color: #4CAF50; font-weight: bold; }
 
-        /* Tombol Aktifkan Suara */
         #sound-btn {
             position: absolute; top: 60px; right: 10px; z-index: 1000;
             padding: 10px 15px; background: #ffc107; color: black; border: none;
@@ -39,7 +36,6 @@
         }
         #sound-btn:hover { background: #e0a800; }
 
-        /* Animasi Berkedip untuk SOS */
         @keyframes blink {
             0% { opacity: 1; }
             50% { opacity: 0.3; }
@@ -67,23 +63,21 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 2. SETTING PETA (SATELIT ASLI)
+        // 2. SETTING PETA
         const map = L.map('map').setView([-6.396311, 107.430083], 18);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Esri Satellite',
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON PAKAI FOTO SENDIRI
+        // 3. SETTING IKON (PAKAI GAMBAR ORANG 3D BAWAAN AGAR TIDAK ERROR)
         const iconAman = L.icon({
-            iconUrl: 'foto-saya.jpg', // <--- NAMA FOTO KAMU DI SINI
-            iconSize: [50, 50],       // Ukuran foto (50x50 pixel)
-            iconAnchor: [25, 50],     // Titik bawah tengah foto menyentuh peta
-            popupAnchor: [0, -50],
-            className: 'rounded-photo' // Tambahkan class untuk buat foto jadi bulat (Opsional)
+            iconUrl: 'https://img.icons8.com/3d-fluency/96/person-male.png', 
+            iconSize: [48, 48], 
+            iconAnchor: [24, 48], 
+            popupAnchor: [0, -48]
         });
         
-        // Untuk SOS, biarkan pakai sirine 3D
         const iconSOS = L.icon({
             iconUrl: 'https://img.icons8.com/3d-fluency/96/siren.png', 
             iconSize: [48, 48], 
@@ -93,11 +87,11 @@
 
         const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
 
-        // 4. SETTING JEJAK HISTORY (GARIS POLYLINE)
+        // 4. JEJAK HISTORY
         const historyPoints = [];
         const historyLine = L.polyline(historyPoints, { color: '#00ffff', weight: 4, opacity: 0.7 }).addTo(map);
 
-        // 5. SISTEM ALARM SUARA (WEB AUDIO API)
+        // 5. SISTEM ALARM SUARA
         let audioCtx = null;
         let alarmInterval = null;
         let isSoundActive = false;
