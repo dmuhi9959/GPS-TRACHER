@@ -171,7 +171,8 @@
                 marker.setLatLng(newPos);
                 map.setView(newPos, 18); 
 
-                if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 3) {
+                // UBAH DI SINI: Minimal 10 meter baru garisnya di-ekstend (Hindari Zig-Zag)
+                if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 10) {
                     historyPoints.push(newPos);
                     historyLine.setLatLngs(historyPoints);
                 }
