@@ -46,7 +46,7 @@
 </head>
 <body>
     <div id="info-box">
-        🏢 Tim: <span id="team-name">CONTROL ROOM</span><br>
+        🏢 Tim: <span id="team-name">FT CIKAMPEK</span><br>
         📍 Status: <span id="status-text">AMAN</span>
     </div>
 
@@ -70,20 +70,14 @@
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON (GUNAKAN NAMA FILE YANG KAMU UPLOAD KE GITHUB)
-        // UBAH 'pekerja.png' DI BAWAH SESUAI NAMA FILE KAMU!
+        // 3. SETTING IKON
         const iconAman = L.icon({
-            iconUrl: 'pekerja.jpeg',  // <--- UBAH NAMA INI (Contoh: pekerja.png atau pekerja.jpg)
-            iconSize: [50, 50], 
-            iconAnchor: [25, 50], 
-            popupAnchor: [0, -50]
+            iconUrl: 'https://img.icons8.com/3d-fluency/96/person-male.png', 
+            iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
         });
-        
         const iconSOS = L.icon({
             iconUrl: 'https://img.icons8.com/3d-fluency/96/siren.png', 
-            iconSize: [48, 48], 
-            iconAnchor: [24, 48], 
-            popupAnchor: [0, -48]
+            iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
         });
 
         const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
@@ -158,23 +152,35 @@
         function updateMap() {
             if (currentLat && currentLng) {
                 const newPos = [currentLat, currentLng];
-                marker.setLatLng(newPos);
-                map.setView(newPos, 18); 
+                
+                // --- FILTER GPS DRIFT (BIAR DIAM TIDAK JALAN SENDIRI) ---
+                // Hitung jarak antara koordinat baru dengan koordinat marker saat ini
+                let lastMarkerPos = marker.getLatLng();
+                let distanceMoved = map.distance(newPos, lastMarkerPos);
+                
+                // Hanya pindah marker (orang) jika jarak perpindahan > 5 meter
+                // Kalau kurang dari 5 meter, marker akan DIAM di tempat
+                if (distanceMoved > 5) {
+                    marker.setLatLng(newPos);
+                    map.setView(newPos, 18); 
+                }
 
+                // Untuk garis history, masih pakai batas 10 meter
                 if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 10) {
                     historyPoints.push(newPos);
                     historyLine.setLatLngs(historyPoints);
                 }
 
+                // Update Tampilan Status
                 if (currentStatus === "SOS") {
                     marker.setIcon(iconSOS);
-                    marker.bindPopup("<b class='sos-alert' style='color:red; font-size: 18px;'>🚨 SOS! BUTUH BANTUAN! 🚨</b><br>Tim: CONTROL ROOM<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
+                    marker.bindPopup("<b class='sos-alert' style='color:red; font-size: 18px;'>🚨 SOS! BUTUH BANTUAN! 🚨</b><br>Tim: FT CIKAMPEK<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
                     document.getElementById('reset-btn').style.display = 'block';
                     document.getElementById('status-text').innerText = "SOS!";
                     document.getElementById('status-text').style.color = "red";
                 } else {
                     marker.setIcon(iconAman);
-                    marker.bindPopup("✅ Status: Aman<br>Tim: CONTROL  ROOM<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
+                    marker.bindPopup("✅ Status: Aman<br>Tim: FT CIKAMPEK<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
                     document.getElementById('reset-btn').style.display = 'none';
                     document.getElementById('status-text').innerText = "AMAN";
                     document.getElementById('status-text').style.color = "#4CAF50";
