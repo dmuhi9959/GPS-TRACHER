@@ -70,14 +70,20 @@
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON
+        // 3. SETTING IKON PAKAI FOTO SENDIRI
+        // UBAH 'foto-saya.jpg' DI BAWAH SESUAI NAMA FILE KAMU DI GITHUB!
         const iconAman = L.icon({
-            iconUrl: 'https://img.icons8.com/3d-fluency/96/person-male.png', 
-            iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+            iconUrl: 'foto-saya.jpg', // <--- GANTI NAMA INI
+            iconSize: [50, 50], 
+            iconAnchor: [25, 50], 
+            popupAnchor: [0, -50]
         });
+        
         const iconSOS = L.icon({
             iconUrl: 'https://img.icons8.com/3d-fluency/96/siren.png', 
-            iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48]
+            iconSize: [48, 48], 
+            iconAnchor: [24, 48], 
+            popupAnchor: [0, -48]
         });
 
         const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
@@ -97,7 +103,7 @@
             }
             isSoundActive = true;
             document.getElementById('sound-btn').style.display = 'none';
-            alert("Suara diaktifkan! Sistem akan berbunyi jika ada SOS.");
+            alert("Suara diaktifkan! Sistem akan berunyi jika ada SOS.");
         }
 
         function bunyikanSirine() {
@@ -154,18 +160,16 @@
                 const newPos = [currentLat, currentLng];
                 
                 // --- FILTER GPS DRIFT (BIAR DIAM TIDAK JALAN SENDIRI) ---
-                // Hitung jarak antara koordinat baru dengan koordinat marker saat ini
                 let lastMarkerPos = marker.getLatLng();
                 let distanceMoved = map.distance(newPos, lastMarkerPos);
                 
-                // Hanya pindah marker (orang) jika jarak perpindahan > 5 meter
-                // Kalau kurang dari 5 meter, marker akan DIAM di tempat
+                // Marker cuma pindah kalau jarak perpindahan > 5 meter
                 if (distanceMoved > 5) {
                     marker.setLatLng(newPos);
                     map.setView(newPos, 18); 
                 }
 
-                // Untuk garis history, masih pakai batas 10 meter
+                // Garis history cuma terbentuk kalau jarak > 10 meter
                 if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 10) {
                     historyPoints.push(newPos);
                     historyLine.setLatLngs(historyPoints);
