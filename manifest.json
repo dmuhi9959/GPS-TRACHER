@@ -1,12 +1,17 @@
 {
   "name": "GPS Tracker Cikampek",
-  "short_name": "GPS",
+  "short_name": "GPS Tracker",
   "start_url": "/",
   "display": "fullscreen",
   "orientation": "any",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
+    {
+      "src": "pekerja.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
     {
       "src": "pekerja.png",
       "sizes": "512x512",
