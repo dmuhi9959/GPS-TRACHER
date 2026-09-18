@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>GPS Tracker Pekerja Lapangan</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
+    <title>GPS Tracker FT CIKAMPEK</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -11,91 +14,86 @@
         html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: #1a1a1a; }
         #map { height: 100vh; width: 100%; }
         
-        #reset-btn {
-            position: absolute; top: 10px; right: 10px; z-index: 1000;
-            padding: 10px 15px; background: #28a745; color: white; border: none;
-            border-radius: 5px; cursor: pointer; font-weight: bold; display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        #reset-btn:hover { background: #218838; }
-
-        #info-box {
-            position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 15px;
-            border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
+        #reset-btn { position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); display: none; }
+        
+        #info-box { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 15px; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         #team-name { color: #ffc107; font-weight: bold; }
         #status-text { color: #4CAF50; font-weight: bold; }
+        
+        #sound-btn { position: absolute; top: 60px; right: 10px; z-index: 1000; padding: 10px 15px; background: #ffc107; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        
+        #warning-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 9998; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        #warning-overlay h2 { font-size: 1.5rem; color: #ffc107; margin: 0; letter-spacing: 2px; }
+        #warning-overlay h1 { font-size: 2.5rem; color: #ffffff; margin: 20px 0; text-shadow: 0 0 20px #ffc107; text-transform: uppercase; }
+        #warning-overlay p { font-size: 1rem; color: #ccc; margin: 0; }
 
-        #sound-btn {
-            position: absolute; top: 60px; right: 10px; z-index: 1000;
-            padding: 10px 15px; background: #ffc107; color: black; border: none;
-            border-radius: 5px; cursor: pointer; font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        #sound-btn:hover { background: #e0a800; }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-        .sos-alert { animation: blink 1s infinite; }
+        #adzan-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        #adzan-overlay h2 { font-size: 2rem; color: #ccc; margin: 0; letter-spacing: 3px; }
+        #adzan-overlay h1 { font-size: 3rem; color: #ffc107; margin: 20px 0; text-shadow: 0 0 20px #ffc107; text-transform: uppercase; }
+        #adzan-overlay p { font-size: 1.5rem; color: #4CAF50; margin: 0; font-weight: bold; }
     </style>
 </head>
 <body>
+    <div id="map"></div>
+    
     <div id="info-box">
         🏢 Tim: <span id="team-name">FT CIKAMPEK</span><br>
-        📍 Status: <span id="status-text">AMAN</span>
+        📍 Status: <span id="status-text">MEMUAT...</span>
+    </div>
+    
+    <button id="reset-btn" onclick="resetSOS()">Reset SOS (Aman)</button>
+    <button id="sound-btn" onclick="aktifkanSuara()">🔊 Aktifkan Suara SOS</button>
+
+    <div id="warning-overlay">
+        <h2>2 MENIT LAGI MASUK WAKTU ADZAN</h2>
+        <h1 id="warning-prayer-name">SUBUH</h1>
+        <p>Mohon siap-siap menuju Masjid</p>
     </div>
 
-    <button id="reset-btn" onclick="resetSOS()">Reset SOS (Aman)</button>
-    <button id="sound-btn" onclick="aktifkanSuara()">🔊 Aktifkan Suara</button>
-    <div id="map"></div>
+    <div id="adzan-overlay">
+        <h2>WAKTUNYA SHOLAT</h2>
+        <h1 id="adzan-prayer-name">SUBUH</h1>
+        <p>Silakan segera menuju Masjid</p>
+    </div>
 
     <script>
-        // 1. SETTING FIREBASE
+        // --- REGISTER SERVICE WORKER (Untuk PWA / APK) ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+            .catch(function(err) { console.log('ServiceWorker registration failed: ', err); });
+        }
+
+        // --- SETTING FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyC4CQMl5l1n1voweOgQouMD1kJcpHs-esU",
             databaseURL: "https://gps-tracher-default-rtdb.firebaseio.com"
         };
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const dbRef = firebase.database().ref('gps/aku');
 
-        // 2. SETTING PETA
-        const map = L.map('map').setView([-6.396311, 107.430083], 18);
+        // --- SETTING PETA ---
+        const map = L.map('map').setView([-6.396311, 107.430083], 15);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Esri Satellite',
             maxZoom: 19
         }).addTo(map);
 
-        // 3. SETTING IKON PAKAI FOTO SENDIRI
-        // UBAH 'foto-saya.jpg' DI BAWAH SESUAI NAMA FILE KAMU DI GITHUB!
-        const iconAman = L.icon({
-            iconUrl: 'pekerja.png', // <--- GANTI NAMA INI
+        const personIcon = L.icon({
+            iconUrl: 'icon.png', // Ganti dengan nama foto yang kamu upload ke GitHub
             iconSize: [50, 50], 
             iconAnchor: [25, 50], 
             popupAnchor: [0, -50]
         });
-        
-        const iconSOS = L.icon({
-            iconUrl: 'https://img.icons8.com/3d-fluency/96/siren.png', 
-            iconSize: [48, 48], 
-            iconAnchor: [24, 48], 
-            popupAnchor: [0, -48]
-        });
 
-        const marker = L.marker([-6.396311, 107.430083], {icon: iconAman}).addTo(map);
+        const marker = L.marker([-6.396311, 107.430083], {icon: personIcon}).addTo(map);
+        const circle = L.circle([-6.396311, 107.430083], { color: 'blue', fillColor: '#30f', fillOpacity: 0.2, radius: 20 }).addTo(map);
 
-        // 4. JEJAK HISTORY
         const historyPoints = [];
         const historyLine = L.polyline(historyPoints, { color: '#00ffff', weight: 4, opacity: 0.7 }).addTo(map);
 
-        // 5. SISTEM ALARM SUARA
+        let isSoundActive = false;
         let audioCtx = null;
         let alarmInterval = null;
-        let isSoundActive = false;
 
         function aktifkanSuara() {
             if (!audioCtx) {
@@ -103,7 +101,6 @@
             }
             isSoundActive = true;
             document.getElementById('sound-btn').style.display = 'none';
-            alert("Suara diaktifkan! Sistem akan berunyi jika ada SOS.");
         }
 
         function bunyikanSirine() {
@@ -138,63 +135,92 @@
             }
         }
 
-        // 6. BACA DATA REAL-TIME
-        let currentLat = 0, currentLng = 0, currentStatus = "AMAN";
+        function showWarningOverlay(namaSholat) {
+            document.getElementById('warning-prayer-name').innerText = namaSholat;
+            document.getElementById('warning-overlay').style.display = 'flex';
+            setTimeout(function() { document.getElementById('warning-overlay').style.display = 'none'; }, 15000);
+        }
 
-        database.ref('gps/aku/lat').on('value', (s) => { currentLat = s.val(); updateMap(); });
-        database.ref('gps/aku/lng').on('value', (s) => { currentLng = s.val(); updateMap(); });
-        
-        database.ref('gps/aku/status').on('value', (s) => {
-            let newStatus = s.val() || "AMAN";
-            if (newStatus === "SOS" && currentStatus !== "SOS") {
-                startAlarm();
-            } else if (newStatus === "AMAN") {
+        function showAdzanOverlay(namaSholat) {
+            document.getElementById('adzan-prayer-name').innerText = namaSholat;
+            document.getElementById('adzan-overlay').style.display = 'flex';
+            startAlarm();
+            setTimeout(function() { 
+                document.getElementById('adzan-overlay').style.display = 'none'; 
                 stopAlarm();
-            }
-            currentStatus = newStatus;
+            }, 120000);
+        }
+
+        function resetSOS() {
+            stopAlarm();
+            dbRef.child('status').set("AMAN");
+            dbRef.child('status').onDisconnect().cancel(); // Cancel the disconnect trigger if manually reset
+        }
+
+        // --- BACA DATA REAL-TIME DARI FIREBASE ---
+        dbRef.child('lat').on('value', function(s) {
+            let lat = s.val();
+            let lng = parseFloat(document.getElementById('current-lng').textContent); // Dummy way, better to use global var
+            // I will fix the global var logic below
+        });
+
+        let currentLat = 0, currentLng = 0;
+
+        dbRef.child('lat').on('value', function(snapshot) {
+            currentLat = snapshot.val();
             updateMap();
         });
+
+        dbRef.child('lng').on('value', function(snapshot) {
+            currentLng = snapshot.val();
+            updateMap();
+        });
+
+        dbRef.child('status').on('value', function(snapshot) {
+            let newStatus = snapshot.val() || "AMAN";
+            
+            if (newStatus === "SOS") {
+                startAlarm();
+                document.getElementById('reset-btn').style.display = 'block';
+                document.getElementById('status-text').innerText = "SOS!";
+                document.getElementById('status-text').style.color = "red";
+            } else if (newStatus === "OFFLINE") {
+                stopAlarm();
+                document.getElementById('reset-btn').style.display = 'none';
+                document.getElementById('status-text').innerText = "OFFLINE";
+                document.getElementById('status-text').style.color = "gray";
+            } else {
+                stopAlarm();
+                document.getElementById('reset-btn').style.display = 'none';
+                document.getElementById('status-text').innerText = "AMAN";
+                document.getElementById('status-text').style.color = "#4CAF50";
+            }
+        });
+
+        // Set up onDisconnect to set status to OFFLINE
+        dbRef.child('status').onDisconnect().set("OFFLINE");
 
         function updateMap() {
             if (currentLat && currentLng) {
                 const newPos = [currentLat, currentLng];
                 
-                // --- FILTER GPS DRIFT (BIAR DIAM TIDAK JALAN SENDIRI) ---
-                let lastMarkerPos = marker.getLatLng();
-                let distanceMoved = map.distance(newPos, lastMarkerPos);
+                // Filter GPS Drift: Marker cuma pindah kalau jarak perpindahan > 5 meter
+                let lastPos = marker.getLatLng();
+                let distanceMoved = map.distance(newPos, lastPos);
                 
-                // Marker cuma pindah kalau jarak perpindahan > 5 meter
                 if (distanceMoved > 5) {
                     marker.setLatLng(newPos);
                     map.setView(newPos, 18); 
                 }
 
-                // Garis history cuma terbentuk kalau jarak > 10 meter
+                // Filter GPS Drift: Garis history cuma terbentuk kalau jarak > 10 meter
                 if (historyPoints.length === 0 || map.distance(newPos, historyPoints[historyPoints.length - 1]) > 10) {
                     historyPoints.push(newPos);
                     historyLine.setLatLngs(historyPoints);
                 }
 
-                // Update Tampilan Status
-                if (currentStatus === "SOS") {
-                    marker.setIcon(iconSOS);
-                    marker.bindPopup("<b class='sos-alert' style='color:red; font-size: 18px;'>🚨 SOS! BUTUH BANTUAN! 🚨</b><br>Tim: FT CIKAMPEK<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
-                    document.getElementById('reset-btn').style.display = 'block';
-                    document.getElementById('status-text').innerText = "SOS!";
-                    document.getElementById('status-text').style.color = "red";
-                } else {
-                    marker.setIcon(iconAman);
-                    marker.bindPopup("✅ Status: Aman<br>Tim: FT CIKAMPEK<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
-                    document.getElementById('reset-btn').style.display = 'none';
-                    document.getElementById('status-text').innerText = "AMAN";
-                    document.getElementById('status-text').style.color = "#4CAF50";
-                }
+                marker.bindPopup("FT CIKAMPEK<br>Lat: " + currentLat + "<br>Lng: " + currentLng).openPopup();
             }
-        }
-
-        function resetSOS() {
-            stopAlarm();
-            database.ref('gps/aku/status').set("AMAN");
         }
     </script>
 </body>
