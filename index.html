@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: #1a1a1a; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; }
         #map { height: 100vh; width: 100%; }
         
         #reset-btn { position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); display: none; }
@@ -79,7 +79,7 @@
         }).addTo(map);
 
         const personIcon = L.icon({
-            iconUrl: 'icon.png', // Ganti dengan nama foto yang kamu upload ke GitHub
+            iconUrl: 'pekerja.png', // Ganti dengan nama foto yang kamu upload ke GitHub
             iconSize: [50, 50], 
             iconAnchor: [25, 50], 
             popupAnchor: [0, -50]
@@ -154,16 +154,10 @@
         function resetSOS() {
             stopAlarm();
             dbRef.child('status').set("AMAN");
-            dbRef.child('status').onDisconnect().cancel(); // Cancel the disconnect trigger if manually reset
+            dbRef.child('status').onDisconnect().cancel(); 
         }
 
         // --- BACA DATA REAL-TIME DARI FIREBASE ---
-        dbRef.child('lat').on('value', function(s) {
-            let lat = s.val();
-            let lng = parseFloat(document.getElementById('current-lng').textContent); // Dummy way, better to use global var
-            // I will fix the global var logic below
-        });
-
         let currentLat = 0, currentLng = 0;
 
         dbRef.child('lat').on('value', function(snapshot) {
